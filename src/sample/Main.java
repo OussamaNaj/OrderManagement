@@ -7,15 +7,15 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import javax.swing.*;
 import java.sql.*;
 
 
@@ -31,7 +31,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         window=primaryStage;
-        window.setTitle("All Commands");
+
         ////////////
         TableColumn<Command,String> codeColumn = new TableColumn<>("Code");
         codeColumn.setMinWidth(200);
@@ -105,12 +105,61 @@ public class Main extends Application {
 
         VBox vBox = new VBox();
         vBox.getChildren().addAll(table,hBox);
-        Scene scene =new Scene(vBox);
-        window.setScene(scene);
+        Scene scene2 =new Scene(vBox);
+        GridPane grid=new GridPane();
+        grid.setPadding(new Insets(10,10,10,10));
+        grid.setHgap(8);
+        grid.setVgap(10);
+
+        Label nameLabel = new Label("username : ");
+        GridPane.setConstraints(nameLabel,0,0);
+
+        TextField nameinput = new TextField();
+        GridPane.setConstraints(nameinput,1,0);
+
+        Label passwordLabel = new Label("Password : ");
+        GridPane.setConstraints(passwordLabel,0,1);
+
+        TextField passwordinput = new PasswordField();
+        passwordinput.setPromptText("password");
+        GridPane.setConstraints(passwordinput,1,1);
+
+        Button loginbutton= new Button("Log In");
+        loginbutton.setOnAction(e->{
+            ConnextionClass connectionClass = new ConnextionClass();
+            Connection connection=connectionClass.connectdb();
+            String nom=nameinput.getText();
+            String password=passwordinput.getText();
+            String sql="select * from USERS where nom = '"+nom+"' and password= '"+password+"';";
+            Statement statement= null;
+            try {
+                statement = connection.createStatement();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+            ResultSet resultSet= null;
+            try {
+                resultSet = statement.executeQuery(sql);
+                if(resultSet.next()){
+                    window.setScene(scene2);
+                    window.setTitle("");
+                    window.setTitle("All Commands");
+                }else {
+                    JOptionPane.showMessageDialog(null,"Login failed ! Please try again. ");
+                }
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        });
+
+        GridPane.setConstraints(loginbutton,1,2);
+        grid.getChildren().addAll(nameinput,nameLabel,passwordinput,passwordLabel,loginbutton);
+        Scene scene1=new Scene(grid,300,200);
+        window.setScene(scene1);
         window.show();
     }
 
-    
+
 
     public ObservableList<Command> getProduct() throws SQLException {
 
@@ -165,5 +214,7 @@ public class Main extends Application {
     }
 
 
+
 }
+
 
